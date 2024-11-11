@@ -111,7 +111,7 @@ public:
         mlir::func::FuncOp func = getOperation();
         mlir::MLIRContext *context = &getContext();
 
-        llvm::outs() << "Running MatrixMultiplyAssociateRewritePattern on function: " << func.getName() << "\n";
+        // llvm::outs() << "Running MatrixMultiplyAssociateRewritePattern on function: " << func.getName() << "\n";
         
         mlir::RewritePatternSet patterns(context);
         patterns.add<MatrixMultiplyAssociateRewritePattern>(context);
@@ -123,7 +123,7 @@ public:
             signalPassFailure();
         }
 
-        llvm::outs() << "Finished running MatrixMultiplyAssociateRewritePattern on function: " << func.getName() << "\n";
+        // llvm::outs() << "Finished running MatrixMultiplyAssociateRewritePattern on function: " << func.getName() << "\n";
     }
 };
 

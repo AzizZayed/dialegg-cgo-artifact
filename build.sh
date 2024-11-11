@@ -1,6 +1,9 @@
 #!/bin/bash
 
 # Build LLVM with MLIR
+export CC=/usr/bin/clang
+export CXX=/usr/bin/clang++
+
 cd /llvm
 echo "Building LLVM with MLIR"
 mkdir build-release
@@ -21,12 +24,19 @@ cd ..
 export PATH=$LLVM:$EGGLOG:$PATH
 
 # Build DialEgg
+cd /dialegg
 echo "Building DialEgg"
 mkdir build
-cmake -S . -B build
+cmake -S . -B build -G Ninja
 cmake --build build
 
+# Build libutil
+cd /dialegg
+./mlir/libify_util.sh
+
 # Install Python dependencies
+cd /dialegg
+echo "Installing Python dependencies"
 python3 -m venv /dialegg/venv
 source /dialegg/venv/bin/activate
 python3 -m pip install --upgrade pip

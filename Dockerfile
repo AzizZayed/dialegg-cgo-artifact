@@ -1,4 +1,4 @@
-FROM ubuntu:24.04
+FROM arm64v8/ubuntu:24.04
 USER root
 
 # Install git
@@ -10,12 +10,18 @@ RUN git clone -b cost-action https://github.com/saulshanabrook/egg-smol.git /egg
 
 # Update and install dependencies
 RUN apt-get update && apt-get install -y \
-    build-essential clang cmake lld ninja-build \
-    python3 python3-pip python3-venv
+    vim \
+    build-essential clang automake cmake make ccache lld ninja-build zlib1g-dev \
+    python3 python3-pip python3-venv \
+    cargo \
+    texlive texlive-fonts-recommended texlive-fonts-extra fonts-linuxlibertine dvipng
 
 # Copy the DialEGG source code
 COPY . /dialegg
 
 # Add run permissions to scripts
 RUN chmod +x /dialegg/build.sh
-RUN chmod +x /dialegg/run.sh
+
+# Set C/C++ compiler to clang
+ENV CC=/usr/bin/clang
+ENV CXX=/usr/bin/clang++

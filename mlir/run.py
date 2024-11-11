@@ -75,13 +75,13 @@ def run_mlir_file(mlir_file, opt="-O3", extra_passes=None, verbose=True):
     if verbose:
         print(f"Creating {exec_file}")
 
-    lib_path = "/Users/aziz/dev/lib/llvm/build/lib"
+    lib_path = "/llvm/build-release/lib"
     lib = "mlir_c_runner_utils"
 
     # clang -O3 $o_file -o $exe_file -L/Users/aziz/dev/lib/llvm/build/lib -lmlir_c_runner_utils -Wl,-rpath,/Users/aziz/dev/lib/llvm/build/lib
     subprocess.run(["clang", opt, o_file, "-o", exec_file, 
-                    f"-L{lib_path}", f"-l{lib}", "-L/Users/aziz/dev/current/dialegg/mlir/run", "-lutil",
-                    f"-Wl,-rpath,{lib_path}", "-Wl,-rpath,/Users/aziz/dev/current/dialegg/mlir/run"])
+                    f"-L{lib_path}", f"-l{lib}", "-L/dialegg/mlir", "-lutil",
+                    f"-Wl,-rpath,{lib_path}", "-Wl,-rpath,/dialegg/mlir", "-lm"])
 
     # Run the executable
     result = subprocess.run(exec_file, shell=True, text=True, capture_output=True) # exe_file
@@ -106,4 +106,5 @@ if __name__ == "__main__":
     
     mlir_file = sys.argv[1]
     out = run_mlir_file(mlir_file, verbose=True)  # format "53926 us -> 0.053926 s"
-    # print(out)
+    if (len(out) <= 100):
+        print(out)
