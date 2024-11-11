@@ -1,0 +1,49 @@
+(include "src/base.egg")
+
+;;;; linalg dialect ;;;;
+(function linalg_matmul (Op Op Op Type) Op)
+
+;;;; tensor dialect ;;;;
+(function tensor_empty (Type) Op)
+
+;; OPS HERE ;;
+
+;; RULES HERE ;;
+(ruleset rules)
+
+; (rule ((= ?A (tensor_empty ?t))) ((set (type-of ?A) ?t)) :ruleset rules)
+(rule ((= ?A (Value ?id ?t))) ((set (type-of ?A) ?t)) :ruleset rules)
+(rule ((= ?A (linalg_matmul ?x ?y ?o ?t))) ((set (type-of ?A) ?t)) :ruleset rules)
+
+(function nrows (Type) i64)
+(function ncols (Type) i64)
+(rule ((= ?t (RankedTensor ?shape ?tp))) 
+    ((set (nrows ?t) (vec-get ?shape 0)) 
+     (set (ncols ?t) (vec-get ?shape 1)))
+    :ruleset rules
+)
+
+(rule 
+    ((linalg_matmul ?x ?y ?xy ?t)
+     (= a (nrows (type-of ?x)))
+     (= b (ncols (type-of ?x)))
+     (= c (ncols (type-of ?y))))
+
+    ((unstable-cost (linalg_matmul ?x ?y ?xy ?t) (* (* a b) c)))
+    :ruleset rules
+)
+
+(rule
+    ((= ?lhs (linalg_matmul (linalg_matmul ?x ?y ?xy ?xy_t) ?z ?xy_z ?xyz_t))
+     (= ?b (nrows (type-of ?y)))
+     (= ?d (ncols (type-of ?z)))
+     (= ?xyz_t (RankedTensor ? ?t)))
+    
+    ((let out_t (RankedTensor (vec-of ?b ?d) ?t))
+     (union ?lhs (linalg_matmul ?x (linalg_matmul ?y ?z (tensor_empty out_t) out_t) ?xy_z ?xyz_t)))
+    :ruleset rules
+)
+
+(run-schedule (saturate rules))
+
+;; EXTRACTS HERE ;;

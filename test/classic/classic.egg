@@ -1,0 +1,32 @@
+(include "src/base.egg")
+
+;;;; arith dialect ;;;;
+(function arith_constant (AttrPair Type) Op)
+(function arith_muli (Op Op AttrPair Type) Op)
+(function arith_divsi (Op Op Type) Op)
+(function arith_shli (Op Op AttrPair Type) Op)
+
+;; OPS HERE ;;
+
+;; RULES HERE ;;
+(ruleset rules)
+(let c1 (arith_constant (NamedAttr "value" (IntegerAttr 1 (I32))) (I32))) ; 1
+(let c2 (arith_constant (NamedAttr "value" (IntegerAttr 2 (I32))) (I32))) ; 2
+
+(rewrite (arith_divsi ?x ?x    (I32)) c1 :ruleset rules) ; x / x = 1
+(rewrite (arith_muli  ?x c1 ?a (I32)) ?x :ruleset rules) ; x * 1 = x
+
+(rewrite ; x * 2 = x << 1
+    (arith_muli ?x c2 ?a (I32)) ; x * 2
+    (arith_shli ?x c1 ?a (I32)) ; x << 1
+    :ruleset rules
+)
+(rewrite ; (xy) / z = x (z / y)
+    (arith_divsi   (arith_muli  ?x ?y ?a ?t) ?z ?t)
+    (arith_muli ?x (arith_divsi ?y ?z    ?t) ?a ?t)
+    :ruleset rules
+)
+
+(run-schedule (saturate rules))
+
+;; EXTRACTS HERE ;;

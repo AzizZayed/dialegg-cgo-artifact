@@ -1,0 +1,20 @@
+(include "src/base.egg")
+
+;; Attrs
+(datatype FastMathFlags (none) (reassoc) (nnan) (ninf) (nsz) (arcp) (contract) (afn) (fast))
+(function arith_fastmath (FastMathFlags) Attr)
+
+;; Ops
+(function arith_constant (AttrPair Type) Op)
+(function arith_cmpf (Op Op AttrPair AttrPair Type) Op)
+(function scf_if (Op Region Region Type) Op)
+(function scf_yield (Op) Op)
+(function math_sqrt (Op AttrPair Type) Op)
+(function arith_negf (Op AttrPair Type) Op)
+(function func_return (Op) Op)
+
+;; OPS HERE ;;
+
+;; RULES HERE ;;
+
+;; EXTRACTS HERE ;;

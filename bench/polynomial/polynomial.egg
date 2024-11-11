@@ -1,0 +1,65 @@
+(include "src/base.egg")
+
+;;;; arith dialect ;;;;
+
+;; Attrs
+(datatype FastMathFlags (none) (reassoc) (nnan) (fast))
+(function arith_fastmath (FastMathFlags) Attr)
+
+;; Ops
+(function arith_constant (AttrPair Type) Op)
+(function arith_mulf (Op Op AttrPair Type) Op :cost 100)
+(function arith_addf (Op Op AttrPair Type) Op)
+
+;;;; math dialect ;;;;
+(function math_powf (Op Op AttrPair Type) Op :cost 100000)
+
+;; OPS HERE ;;
+
+;; RULES HERE ;;
+(ruleset rules)
+
+; commutative
+(rewrite (arith_addf ?x ?y ?a ?t) (arith_addf ?y ?x ?a ?t) :ruleset rules) ; x + y = y + x
+(rewrite (arith_mulf ?x ?y ?a ?t) (arith_mulf ?y ?x ?a ?t) :ruleset rules) ; x * y = y * x
+
+; associative
+(rewrite ; (x + y) + z = x + (y + z)
+    (arith_addf (arith_addf ?x ?y ?a ?t) ?z ?a ?t) 
+    (arith_addf ?x (arith_addf ?y ?z ?a ?t) ?a ?t) 
+    :ruleset rules
+)
+(rewrite ; (x * y) * z = x * (y * z)
+    (arith_mulf (arith_mulf ?x ?y ?a ?t) ?z ?a ?t) 
+    (arith_mulf ?x (arith_mulf ?y ?z ?a ?t) ?a ?t) 
+    :ruleset rules
+)
+
+; identity
+(rewrite (arith_mulf ?x (arith_constant (NamedAttr "value" (FloatAttr 1.0 ?t)) ?t) ?a ?t) ?x :ruleset rules) ; x * 1 = x
+(rewrite ; x^0 = 1
+    (math_powf ?x (arith_constant (NamedAttr "value" (FloatAttr 0.0 ?t)) ?t) ?a ?t) 
+    (arith_constant (NamedAttr "value" (FloatAttr 1.0 ?t)) ?t)
+    :ruleset rules
+)
+
+(rule ; x^n = x * x^(n - 1)
+    ((= ?lhs (math_powf ?x (arith_constant (NamedAttr "value" (FloatAttr ?n ?t)) ?t) ?a ?t))
+     (>= ?n 1.0))
+    ((union 
+        ?lhs 
+        (arith_mulf ?x (math_powf ?x (arith_constant (NamedAttr "value" (FloatAttr (- ?n 1.0) ?t)) ?t) ?a ?t) ?a ?t)
+    ))
+    :ruleset rules
+)
+
+; mx + nx = x(m + n)
+(rewrite 
+    (arith_addf (arith_mulf ?m ?x ?a ?t) (arith_mulf ?n ?x ?a ?t) ?a ?t)
+    (arith_mulf ?x (arith_addf ?m ?n ?a ?t) ?a ?t)
+    :ruleset rules
+)
+
+(run-schedule (saturate rules)) ; search 0.017s, apply 0.002s, rebuild 0.006s, total 0.025s
+
+;; EXTRACTS HERE ;;

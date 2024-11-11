@@ -1,0 +1,98 @@
+(sort IntVec (Vec i64))
+(sort FloatVec (Vec f64))
+
+;; Types
+(sort Type)
+(sort TypeVec (Vec Type))
+
+;; Attrs
+(sort Attr)
+(sort AttrDict (Map String Attr))
+(sort AttrVec (Vec Attr))
+(datatype AttrPair (NamedAttr String Attr) (ValueAttr Attr))
+
+;; Op
+;; Usage:
+;; (<op_variant> <operand1> <operand2> ... <operandN> <attr1> <attr2> ... <attrM> <region1> <region2> ... <regionR> <type>)
+(datatype Op 
+    (Value i64 Type)
+    (OpaqueOp i64 TypeVec)
+    (NoOp)
+)
+(sort OpVec (Vec Op))
+(datatype Block (Blk OpVec))
+(sort BlockVec (Vec Block))
+(datatype Region (Reg BlockVec))
+(sort RegionVec (Vec Region))
+
+;; helper functions
+(function type-of (Op) Type)
+(function dims (Type) IntVec)
+
+;;;; builtin dialect ;;;;
+
+;; Types
+
+(function F16 () Type)
+(function F32 () Type)
+(function F64 () Type)
+(function F80 () Type)
+(function F128 () Type)
+(function I1 () Type)
+(function I4 () Type)
+(function I8 () Type)
+(function I16 () Type)
+(function I32 () Type)
+(function I64 () Type)
+(function Int (i64) Type)
+(function SInt (i64) Type)
+(function UInt (i64) Type)
+(function OtherInt (String) Type)
+(function Index () Type)
+(function None () Type)
+(function Complex (Type) Type)
+(function Tuple (TypeVec) Type)
+(function Function (TypeVec TypeVec) Type)
+
+(function Vector (IntVec Type) Type)
+(function RankedTensor (IntVec Type) Type)
+(function UnrankedTensor (Type) Type)
+
+(function OpaqueType (String String) Type)
+
+; Dynamic RankedTensor type
+; (datatype Dimension
+;     (Dyn)
+;     (D i64)
+; )
+; (sort DimVec (Vec Dimension))
+; (function DynRankedTensor (DimVec Type) Type)
+
+; (rule ((= ?t (RankedTensor ?dims ?tp))) ((set (dims ?t) ?dims)))
+
+;; Attrs
+
+(function NoAttr () Attr)
+(function IntegerAttr (i64 Type) Attr)
+(function FloatAttr (f64 Type) Attr)
+(function StringAttr (String) Attr)
+(function UnitAttr () Attr)
+(function TypeAttr (Type) Attr)
+
+(function ArrayAttr (AttrVec) Attr)
+(function DenseIntArrayAttr (i64 IntVec Type) Attr)
+(function DenseFloatArrayAttr (f64 FloatVec Type) Attr)
+(function DenseIntElementsAttr (FloatVec Type) Attr)
+(function DenseFPElementsAttr (FloatVec Type) Attr)
+(function SymbolRefAttr (String) Attr)
+
+(function OpaqueAttr (String String) Attr) ; (<attr> <type-name>)
+
+; DenseResourceElementsAttr
+; DenseStringElementsAttr
+; DictionaryAttr
+; IntegerSetAttr
+; OpaqueAttr
+; SparseElementsAttr
+; SymbolRefAttr
+; StridedLayoutAttr

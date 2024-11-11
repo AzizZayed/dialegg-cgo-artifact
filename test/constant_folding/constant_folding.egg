@@ -1,0 +1,22 @@
+(include "src/base.egg")
+
+;;;; arith dialect ;;;;
+(function arith_constant (AttrPair Type) Op)
+(function arith_addi (Op Op AttrPair Type) Op)
+
+;; OPS HERE ;;
+
+;; RULES HERE ;;
+(ruleset rules)
+(rewrite ; constant fold for arith.addi
+    (arith_addi ; x + y
+        (arith_constant (NamedAttr "value" (IntegerAttr ?x ?t)) ?t) ; x
+        (arith_constant (NamedAttr "value" (IntegerAttr ?y ?t)) ?t) ; y
+        ?a ?t)
+    (arith_constant (NamedAttr "value" (IntegerAttr (+ ?x ?y) ?t)) ?t) ; x + y
+    :ruleset rules
+)
+
+(run-schedule (saturate rules))
+
+;; EXTRACTS HERE ;;

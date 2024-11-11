@@ -1,0 +1,1 @@
+# Script to test eq-sat and compare it to the expected output for each benchmark

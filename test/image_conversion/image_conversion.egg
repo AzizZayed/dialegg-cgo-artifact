@@ -1,0 +1,22 @@
+(include "src/base.egg")
+
+;;;; arith dialect ;;;;
+(function arith_constant (AttrPair Type) Op)
+(function arith_divsi (Op Op Type) Op :cost 2)
+(function arith_shrsi (Op Op Type) Op)
+
+;; OPS HERE ;;
+
+;; RULES HERE ;;
+(ruleset rules)
+(rule ; division by a power of 2 is equivalent to right shift
+    ((= ?lhs (arith_divsi ?x (arith_constant (NamedAttr "value" (IntegerAttr ?n ?t)) ?t) ?t)) ; x / n
+     (= ?lgn (log2 ?n)) ; if n = 2^k, then k = log2(n)
+     (= ?n (<< 1 ?lgn))) ; check if n is a power of 2
+    ((union ?lhs (arith_shrsi ?x (arith_constant (NamedAttr "value" (IntegerAttr ?lgn ?t)) ?t) ?t))) ; x / n = x >> lgn
+    :ruleset rules
+)
+
+(run-schedule (saturate rules))
+
+;; EXTRACTS HERE ;;

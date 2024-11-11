@@ -1,0 +1,11 @@
+*.DS_Store
+.idea/
+cmake-build-*/
+build/
+__pycache__/
+.vscode/
+.dialegg.venv/
+*.log
+*.out
+**/*.log
+**/*.out

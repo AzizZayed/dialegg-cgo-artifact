@@ -1,0 +1,35 @@
+(include "src/base.egg")
+
+;;;; arith dialect ;;;;
+
+;; Attrs
+(datatype FastMathFlags (none) (reassoc) (nnan) (fast))
+(function arith_fastmath (FastMathFlags) Attr)
+
+;; Ops
+(function arith_constant (AttrPair Type) Op)
+(function arith_divf (Op Op AttrPair Type) Op)
+
+;;;; math dialect ;;;;
+(function math_sqrt (Op AttrPair Type) Op)
+
+;;;; func dialect ;;;;
+(function func_call (Op AttrPair Type) Op)
+
+;; OPS HERE ;;
+
+;; RULES HERE ;;
+(ruleset rules)
+
+(rewrite
+    (arith_divf 
+        (arith_constant (NamedAttr "value" (FloatAttr 1.0 (F32))) (F32)) ; 1.0
+        (math_sqrt ?x (NamedAttr "fastmath" (arith_fastmath (fast))) (F32)) ; sqrt(x) with fastmath<fast>
+        (NamedAttr "fastmath" (arith_fastmath (fast))) (F32)) ; 1 / sqrt(x) with fastmath<fast>
+    (func_call ?x (NamedAttr "callee" (SymbolRefAttr "fast_inv_sqrt")) (F32))
+    :ruleset rules
+)
+
+(run-schedule (saturate rules))
+
+;; EXTRACTS HERE ;;
