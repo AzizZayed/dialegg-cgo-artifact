@@ -1,4 +1,4 @@
-FROM arm64v8/ubuntu:24.04
+FROM ubuntu:24.04
 USER root
 
 # Install git
@@ -14,7 +14,7 @@ RUN apt-get update && apt-get install -y \
     build-essential clang automake cmake make ccache lld ninja-build zlib1g-dev \
     python3 python3-pip python3-venv \
     cargo \
-    texlive texlive-fonts-recommended texlive-fonts-extra fonts-linuxlibertine dvipng
+    texlive texlive-fonts-recommended texlive-latex-extra texlive-fonts-extra fonts-linuxlibertine dvipng
 
 # Copy the DialEGG source code
 COPY . /dialegg
@@ -25,3 +25,5 @@ RUN chmod +x /dialegg/build.sh
 # Set C/C++ compiler to clang
 ENV CC=/usr/bin/clang
 ENV CXX=/usr/bin/clang++
+
+# Buiding this image takes ~500s to build on a 2021 MacBook Pro with M1 Pro SoC

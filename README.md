@@ -21,7 +21,7 @@ Then run and enter the container
 docker run --name dialegg-ubuntu --rm -i -t dialegg-image bash
 ```
 
-Within the container, you run the build script that build LLVM with MLIR, Egglog, and DialEgg. This will take a long time.
+Within the container, you run the build script that build LLVM with MLIR, Egglog, and DialEgg. LLVM is known to take a long time to build so this build script will take a long time.
 ```bash
 cd dialegg
 ./build.sh
@@ -33,6 +33,8 @@ Each subdirectory has the main MLIR file and an egg file.
 When you run the optimizer, you will find each subdirectory is populated with the optimized versions using the different methods mentioned in section 8 of the paper and figure 3.
 ```bash
 source venv/bin/activate
+source .env
+
 python bench/opt.py
 ```
 

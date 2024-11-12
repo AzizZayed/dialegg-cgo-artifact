@@ -13,7 +13,7 @@ def same_name_files(name, directory):
 def benchmark_file(filename, directory):
     all_mlir_files = same_name_files(filename, directory)
     all_opt_levels = ["-O3"]
-    n_runs = 10  # number of runs
+    n_runs = 11  # number of runs
     regex_time = re.compile(r"(\d+) us ->")  # format "53926 us -> 0.053926 s"
 
     # Persist data, cols are: the name of the opt type, and each opt level

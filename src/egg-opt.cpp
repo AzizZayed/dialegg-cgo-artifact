@@ -16,7 +16,9 @@ std::string getMlirFile(int argc, char** argv) {
         if (argv[i][0] != '-') {
             return argv[i];
         }
-    } 
+    }
+
+    return "";
 }
 
 std::string getEggFile(int argc, char** argv, std::string mlirFile) {
