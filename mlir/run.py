@@ -91,10 +91,10 @@ def run_mlir_file(mlir_file, opt="-O3", extra_passes=None, verbose=True):
         sys.exit(result.returncode)  # exit if there was an error
     
     out = result.stdout
-    if verbose:  # Save executable output
-        out_file = os.path.join(mlir_filepath, f"{mlir_filename}.out")
-        with open(out_file, "w") as f:
-            f.write(out)
+    # if verbose:  # Save executable output
+    #     out_file = os.path.join(mlir_filepath, f"{mlir_filename}.out")
+    #     with open(out_file, "w") as f:
+    #         f.write(out)
 
     return out
 
@@ -106,5 +106,4 @@ if __name__ == "__main__":
     
     mlir_file = sys.argv[1]
     out = run_mlir_file(mlir_file, verbose=True)  # format "53926 us -> 0.053926 s"
-    if (len(out) <= 100):
-        print(out)
+    print(out)

@@ -7,6 +7,10 @@ func.func @blackhole4k(%tensor: tensor<3840x2160x3xi64>) -> tensor<3840x2160x3xi
     func.return %tensor : tensor<3840x2160x3xi64>
 }
 
+func.func @blackhole4kgray(%tensor: tensor<3840x2160xi64>) -> tensor<3840x2160xi64> {
+    func.return %tensor : tensor<3840x2160xi64>
+}
+
 // 1 func, 7 arith, 5 tensor
 func.func @main() -> i64 { // convert 4K RGB image to grayscale
     %val = arith.constant 100 : i64
@@ -40,8 +44,9 @@ func.func @main() -> i64 { // convert 4K RGB image to grayscale
 
     %end = func.call @clock() : () -> i64  // End measuring time
 
-    %image_gray_cast = tensor.cast %image_gray : tensor<3840x2160xi64> to tensor<?x?xi64>
-    func.call @printI64Tensor2D(%image_gray_cast) : (tensor<?x?xi64>) -> ()
+    // %image_gray_cast = tensor.cast %image_gray : tensor<3840x2160xi64> to tensor<?x?xi64>
+    // func.call @printI64Tensor2D(%image_gray_cast) : (tensor<?x?xi64>) -> ()
+    func.call @blackhole4kgray(%image_gray) : (tensor<3840x2160xi64>) -> tensor<3840x2160xi64>  // disable validation for speed
 	func.call @printNewline() : () -> ()
     func.call @displayTime(%start, %end) : (i64, i64) -> ()
 

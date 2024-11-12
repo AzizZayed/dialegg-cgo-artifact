@@ -17,47 +17,52 @@ func.func @fillRandomF64Tensor2D(%tensor: tensor<?x?xf64>) -> tensor<?x?xf64> {
 }
 
 // 3 func, 4 arith, 7 tensor, 2 scf
-func.func @normalize_distance_vectors(%vectors: tensor<1000000x3xf32>) -> tensor<1000000x3xf32> {
+func.func @normalize_distance_vectors(%vectors: tensor<100000000x3xf32>) -> tensor<100000000x3xf32> {
     // Distance between multiple 3D points and normalizing the resulting vectors. This is a common operation in computer graphics and physics simulations.
 
     %c0 = arith.constant 0 : index
     %c1 = arith.constant 1 : index
     %c2 = arith.constant 2 : index
-    %c1000000 = arith.constant 1000000 : index
+    %c1000000 = arith.constant 100000000 : index
 
-    %norm_vectors_init = tensor.empty() : tensor<1000000x3xf32>
-    %norm_vectors = scf.for %i = %c0 to %c1000000 step %c1 iter_args(%current_vector = %norm_vectors_init) -> (tensor<1000000x3xf32>) {
-        %x = tensor.extract %vectors[%i, %c0] : tensor<1000000x3xf32>
-        %y = tensor.extract %vectors[%i, %c1] : tensor<1000000x3xf32>
-        %z = tensor.extract %vectors[%i, %c2] : tensor<1000000x3xf32>
+    %norm_vectors_init = tensor.empty() : tensor<100000000x3xf32>
+    %norm_vectors = scf.for %i = %c0 to %c1000000 step %c1 iter_args(%current_vector = %norm_vectors_init) -> (tensor<100000000x3xf32>) {
+        %x = tensor.extract %vectors[%i, %c0] : tensor<100000000x3xf32>
+        %y = tensor.extract %vectors[%i, %c1] : tensor<100000000x3xf32>
+        %z = tensor.extract %vectors[%i, %c2] : tensor<100000000x3xf32>
 
         %nx, %ny, %nz = func.call @normalize_vector(%x, %y, %z) : (f32, f32, f32) -> (f32, f32, f32)
 
-        %normalized_vector1 = tensor.insert %nx into %current_vector[%i, %c0] : tensor<1000000x3xf32>
-        %normalized_vector2 = tensor.insert %ny into %normalized_vector1[%i, %c1] : tensor<1000000x3xf32>
-        %normalized_vector3 = tensor.insert %nz into %normalized_vector2[%i, %c2] : tensor<1000000x3xf32>
+        %normalized_vector1 = tensor.insert %nx into %current_vector[%i, %c0] : tensor<100000000x3xf32>
+        %normalized_vector2 = tensor.insert %ny into %normalized_vector1[%i, %c1] : tensor<100000000x3xf32>
+        %normalized_vector3 = tensor.insert %nz into %normalized_vector2[%i, %c2] : tensor<100000000x3xf32>
 
-        scf.yield %normalized_vector3 : tensor<1000000x3xf32>
+        scf.yield %normalized_vector3 : tensor<100000000x3xf32>
     }
 
-    func.return %norm_vectors : tensor<1000000x3xf32>
+    func.return %norm_vectors : tensor<100000000x3xf32>
+}
+
+func.func @blackbox(%t: tensor<100000000x3xf32>) -> tensor<100000000x3xf32> {
+    func.return %t : tensor<100000000x3xf32>
 }
 
 func.func @main() -> i32 {
-    %c1000000 = arith.constant 1000000 : index
+    %c1000000 = arith.constant 100000000 : index
     %c3 = arith.constant 3 : index
 
     %points_cast = tensor.empty(%c1000000, %c3) : tensor<?x?xf64>
     %points_filled = func.call @fillRandomF64Tensor2D(%points_cast) : (tensor<?x?xf64>) -> tensor<?x?xf64>
     %points_trunc = arith.truncf %points_filled : tensor<?x?xf64> to tensor<?x?xf32>
-    %points = tensor.cast %points_trunc : tensor<?x?xf32> to tensor<1000000x3xf32>
+    %points = tensor.cast %points_trunc : tensor<?x?xf32> to tensor<100000000x3xf32>
 
     %start = func.call @clock() : () -> i64
-    %vectors_normalized = func.call @normalize_distance_vectors(%points) : (tensor<1000000x3xf32>) -> tensor<1000000x3xf32>
+    %vectors_normalized = func.call @normalize_distance_vectors(%points) : (tensor<100000000x3xf32>) -> tensor<100000000x3xf32>
     %end = func.call @clock() : () -> i64
 
-    %vectors_normalized_cast = tensor.cast %vectors_normalized : tensor<1000000x3xf32> to tensor<?x?xf32>
-    func.call @printF32Tensor2D(%vectors_normalized_cast) : (tensor<?x?xf32>) -> ()
+    // %vectors_normalized_cast = tensor.cast %vectors_normalized : tensor<100000000x3xf32> to tensor<?x?xf32>
+    // func.call @printF32Tensor2D(%vectors_normalized_cast) : (tensor<?x?xf32>) -> ()
+    func.call @blackbox(%vectors_normalized) : (tensor<100000000x3xf32>) -> tensor<100000000x3xf32>  // disable validation for speed
     func.call @printNewline() : () -> ()
     func.call @displayTime(%start, %end) : (i64, i64) -> ()
 

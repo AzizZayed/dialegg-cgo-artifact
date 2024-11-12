@@ -16,15 +16,19 @@ func.func @fillRandomF64Tensor2D(%tensor: tensor<?x?xf64>) -> tensor<?x?xf64> {
     return %tensor_filled : tensor<?x?xf64>
 }
 
+func.func @blackbox(%t: tensor<100000000xf64>) -> tensor<100000000xf64> {
+    func.return %t : tensor<100000000xf64>
+}
+
 // 5 arith, 6 tensor, 2 scf, 1 func
 func.func @main() -> i32 {
     // polynomial a + bx + cx^2 + dx^3
-    %c1000000 = arith.constant 1000000 : index
+    %c100000000 = arith.constant 100000000 : index
     %c4 = arith.constant 4 : index
 
-    %tensor_cast = tensor.empty(%c1000000, %c4) : tensor<?x?xf64>
+    %tensor_cast = tensor.empty(%c100000000, %c4) : tensor<?x?xf64>
     %tensor_filled = func.call @fillRandomF64Tensor2D(%tensor_cast) : (tensor<?x?xf64>) -> tensor<?x?xf64>
-    %tensor = tensor.cast %tensor_filled : tensor<?x?xf64> to tensor<1000000x4xf64>
+    %tensor = tensor.cast %tensor_filled : tensor<?x?xf64> to tensor<100000000x4xf64>
 
     %start = func.call @clock() : () -> i64
     
@@ -34,22 +38,23 @@ func.func @main() -> i32 {
     %c2 = arith.constant 2 : index
     %c3 = arith.constant 3 : index
 
-    %poly_eval_init = tensor.empty() : tensor<1000000xf64>
-    %poly_eval = scf.for %i = %c0 to %c1000000 step %c1 iter_args(%current_poly_eval = %poly_eval_init) -> (tensor<1000000xf64>) {
-        %a = tensor.extract %tensor[%i, %c0] : tensor<1000000x4xf64>
-        %b = tensor.extract %tensor[%i, %c1] : tensor<1000000x4xf64>
-        %c = tensor.extract %tensor[%i, %c2] : tensor<1000000x4xf64>
-        %d = tensor.extract %tensor[%i, %c3] : tensor<1000000x4xf64>
+    %poly_eval_init = tensor.empty() : tensor<100000000xf64>
+    %poly_eval = scf.for %i = %c0 to %c100000000 step %c1 iter_args(%current_poly_eval = %poly_eval_init) -> (tensor<100000000xf64>) {
+        %a = tensor.extract %tensor[%i, %c0] : tensor<100000000x4xf64>
+        %b = tensor.extract %tensor[%i, %c1] : tensor<100000000x4xf64>
+        %c = tensor.extract %tensor[%i, %c2] : tensor<100000000x4xf64>
+        %d = tensor.extract %tensor[%i, %c3] : tensor<100000000x4xf64>
 
         %num = func.call @poly_eval_3(%a, %b, %c, %d, %x) : (f64, f64, f64, f64, f64) -> f64
-        %updated_poly_eval = tensor.insert %num into %current_poly_eval[%i] : tensor<1000000xf64>
-        scf.yield %updated_poly_eval : tensor<1000000xf64>
+        %updated_poly_eval = tensor.insert %num into %current_poly_eval[%i] : tensor<100000000xf64>
+        scf.yield %updated_poly_eval : tensor<100000000xf64>
     }
 
     %end = func.call @clock() : () -> i64
 
-    %poly_eval_cast = tensor.cast %poly_eval : tensor<1000000xf64> to tensor<?xf64>
-    func.call @printF64Tensor1D(%poly_eval_cast) : (tensor<?xf64>) -> ()
+    // %poly_eval_cast = tensor.cast %poly_eval : tensor<100000000xf64> to tensor<?xf64>
+    // func.call @printF64Tensor1D(%poly_eval_cast) : (tensor<?xf64>) -> ()
+    func.call @blackbox(%poly_eval) : (tensor<100000000xf64>) -> tensor<100000000xf64>  // disable validation for speed
     func.call @printNewline() : () -> ()
     func.call @displayTime(%start, %end) : (i64, i64) -> ()
 
